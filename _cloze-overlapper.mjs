@@ -220,8 +220,8 @@ const CONFIG_SPLIT_RE = /[,\s|.]+/;
 export function parseConfig(elementId = 'cloze-config') {
     const config = document.getElementById(elementId).content.textContent.split(CONFIG_SPLIT_RE);
 
-    const contextBefore = config[0] === '0' ? 0 : (+config[0] || 1);
-    const contextAfter = +config[1] || 0;
+    const contextBefore = config[0] === '0' ? 0 : Math.max(+config[0] || 1, 1);
+    const contextAfter = Math.max(+config[1] || 0, 0);
     const showOnlyContext = (config[2] || 'false').toLowerCase() === 'true';
     const revealAllClozes = (config[3] || 'false').toLowerCase() === 'true';
     const showInactiveHints = (config[4] || 'false').toLowerCase() === 'true';
