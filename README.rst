@@ -68,7 +68,21 @@ can be considered before of after the current one. In the following example::
 - ``c5`` is after ``c1``, ``c2`` and ``c4``, but only ``c1`` is before ``c5``.
 
 Recall All Clozes Card
-======================
+----------------------
 
 If you need an extra card that asks you for all the clozes at once, add another cloze
 with ``ask-all`` in its content, e.g. ``{{c99::ask-all}}``.
+
+Reloading ``_cloze-overlapper.mjs``
+-----------------------------------
+
+JavaScript modules, such as ``_cloze-overlapper.mjs``, are loaded exactly once and never reloaded
+(unless you restart Anki). However, you can use dummy query parameter too reload the module
+without restarting Anki:
+
+.. code:: javascript
+
+  import { renderClozes } from '/_cloze-overlapper.mjs?dev=1';
+
+``dev``-counter must be incremented after every modification of ``_cloze-overlapper.mjs``.
+When the development is complete, ``dev`` query parameter can be removed and Anki restarted.
