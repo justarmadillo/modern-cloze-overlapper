@@ -4,10 +4,14 @@
 <div id="rendered-cloze"></div>
 
 <script type="module">
-  // anki-media-export: "_cloze-overlapper.mjs"
-  // https://github.com/ankidroid/Anki-Android/pull/7764
-  const mediaRoot = globalThis.AnkiDroidJS ? 'https://appassets.androidplatform.net'
-                                           : globalThis.ankiPlatform === 'desktop' ? '' : '.';
-  const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.mjs`);
-  ClozeOverlapper.renderClozes().then(requestAnimationFrame(() => {}));
+  try {
+      // anki-media-export: "_cloze-overlapper.mjs"
+      // https://github.com/ankidroid/Anki-Android/pull/7764
+      const mediaRoot = globalThis.AnkiDroidJS ? 'https://appassets.androidplatform.net'
+                                               : globalThis.ankiPlatform === 'desktop' ? '' : '.';
+      const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.mjs`);
+      await ClozeOverlapper.renderClozes();
+  } catch (e) {
+      document.getElementById('rendered-cloze').textContent = e;
+  }
 </script>

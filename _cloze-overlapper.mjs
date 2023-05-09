@@ -231,14 +231,12 @@ export function parseConfig(elementId = 'cloze-config') {
 
 function revealAllCallback(e) {
     const target = e.currentTarget;
-    renderClozes({ revealAllClozes: true }).then(
-        () => requestAnimationFrame(() => { target.hidden = true; })
-    );
+    doRenderClozes({ revealAllClozes: true }, () => { target.hidden = true; });
 }
 
 const CARD_NUM_RE = /(?<=\bcard)[1-9]\d*\b/;
 
-export function renderClozes(config) {
+function doRenderClozes(config, postRender) {
     config = { ...parseConfig(), ...config };
     const revealAllButton = document.getElementById('reveal-all-button');
     const cardInfo = {
@@ -258,19 +256,34 @@ export function renderClozes(config) {
         document.getElementById('cloze-source').innerHTML, config, cardInfo
     ).render(config, cardInfo));
 
-    // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
-    return MathJax.startup.promise = MathJax.startup.promise.then(() => {
-        if (cardInfo.isBack && cardInfo.hasUnrevealedClozes) {
-            revealAllButton.addEventListener(
-                'click', revealAllCallback, { once: true, passive: true });
-            revealAllButton.hidden = false;
-        }
-
-        document.getElementById('rendered-cloze').innerHTML = renderedCloze;
-        // Anki doesn't seem to support autonumbering, but nonetheless.
-        MathJax.startup.document.state(0);
-        MathJax.typesetClear();
-        MathJax.texReset();
-        return MathJax.typesetPromise();
+    return new Promise(resolve => {
+        requestAnimationFrame(() => {
+            if (cardInfo.isBack && cardInfo.hasUnrevealedClozes) {
+                revealAllButton.addEventListener(
+                    'click', revealAllCallback, { once: true, passive: true });
+                revealAllButton.hidden = false;
+            }
+            document.getElementById('rendered-cloze').innerHTML = renderedCloze;
+            if (postRender) {
+                postRender();
+            }
+            // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
+            if (typeof MathJax !== 'undefined') {
+                // Anki doesn't seem to support autonumbering, but nonetheless.
+                MathJax.startup.document.state(0);
+                MathJax.typesetClear();
+                MathJax.texReset();
+                resolve(MathJax.typesetPromise());
+            } else {
+                resolve();
+            }
+        });
     });
+}
+
+export function renderClozes(config) {
+    if (typeof MathJax === 'undefined') {
+        return doRenderClozes(config);
+    }
+    return MathJax.startup.promise = MathJax.startup.promise.then(() => doRenderClozes(config));
 }

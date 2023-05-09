@@ -12,11 +12,21 @@ In addition to ``anki-simple-cloze-overlapper`` features, support was added for:
 - Nested clozes.
 - Clozes in MathJax.
 
-It has been tested only on Anki Desktop. In principle, it should be usable on AnkiDroid, Anki Web
-and Anki Mobile (but it hasn't been tested). If you want to test on Android, make sure you have
-the latest `Android System WebView`__ installed.
+The code was tested on Anki Desktop and AnkiDroid; the later requires the latest
+`Android System WebView`__ to be installed. In principle, it should be usable on Anki Web
+and Anki Mobile (but it hasn't been tested).
 
 __ https://play.google.com/store/apps/details?id=com.google.android.webview
+
+Modern Cloze Overlapper on AnkiDroid has several limitations:
+
+- Android 10+ is required until https://github.com/ankidroid/Anki-Android/pull/13812 is merged.
+
+- MathJax is not supported on AnkiDroid, see
+  https://github.com/ankidroid/Anki-Android/issues/13819.
+
+- Nested clozes don't work on AnkiDroid, see
+  https://github.com/ankidroid/Anki-Android/issues/13770.
 
 How to Use
 ----------
