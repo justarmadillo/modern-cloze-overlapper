@@ -269,7 +269,7 @@ function doRenderClozes(config, postRender) {
             }
             // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
             if (typeof MathJax !== 'undefined') {
-                // Anki doesn't seem to support autonumbering, but nonetheless.
+                // Anki doesn't seem to support auto-numbering, but nonetheless.
                 MathJax.startup.document.state(0);
                 MathJax.typesetClear();
                 MathJax.texReset();
@@ -282,6 +282,7 @@ function doRenderClozes(config, postRender) {
 }
 
 export function renderClozes(config) {
+    // AnkiDroid loads MathJax only when \( and/or \[ are present.
     if (typeof MathJax === 'undefined') {
         return doRenderClozes(config);
     }

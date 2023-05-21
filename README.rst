@@ -12,7 +12,7 @@ In addition to ``anki-simple-cloze-overlapper`` features, support was added for:
 - Nested clozes.
 - Clozes in MathJax.
 
-The code was tested on Anki Desktop and AnkiDroid; the later requires the latest
+The code was tested on Anki Desktop and AnkiDroid; the latter requires the latest
 `Android System WebView`__ to be installed. In principle, it should be usable on Anki Web
 and Anki Mobile (but it hasn't been tested).
 
@@ -20,10 +20,7 @@ __ https://play.google.com/store/apps/details?id=com.google.android.webview
 
 Modern Cloze Overlapper on AnkiDroid has several limitations:
 
-- Android 10+ is required until https://github.com/ankidroid/Anki-Android/pull/13812 is merged.
-
-- MathJax is not supported on AnkiDroid, see
-  https://github.com/ankidroid/Anki-Android/issues/13819.
+- Android 10+ is required until https://github.com/ankidroid/Anki-Android/pull/13899 is merged.
 
 - Nested clozes don't work on AnkiDroid, see
   https://github.com/ankidroid/Anki-Android/issues/13770.
@@ -60,7 +57,7 @@ The parameters are as follows:
   Set to ``true`` for e.g. long lyrics/poems.
 
 ``RevelAll`` (Boolean ``true`` or ``false``, defaults to ``false``)
-  Reveal all clozes on the back of the card. By default only currently active clozes are revealed.
+  Reveal all clozes on the back of the card. By default, only currently active clozes are revealed.
   (Context clozes are revealed even on cards' fronts.)
 
 ``InactiveHints`` (Boolean ``true`` or ``false``, defaults to ``false``)
@@ -87,7 +84,7 @@ Reloading ``_cloze-overlapper.mjs``
 -----------------------------------
 
 JavaScript modules, such as ``_cloze-overlapper.mjs``, are loaded exactly once and never reloaded
-(unless you restart Anki). However, you can use dummy query parameter too reload the module
+(unless you restart Anki). However, you can use dummy query parameter to reload the module
 without restarting Anki:
 
 .. code:: javascript
