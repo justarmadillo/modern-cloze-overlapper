@@ -167,7 +167,7 @@ export function parseCloze(clozeSrc, config, cardInfo) {
                 currentLevel.push(c);
             } else {
                 // Closing marker outside of any clozes.
-                topLevel.push(m[0]);
+                topLevel.push(new TextNode(m[0]));
             }
         }
 
