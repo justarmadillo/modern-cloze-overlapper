@@ -1,6 +1,17 @@
 <template id="anki-cloze">{{cloze:Text}}</template>
 <template id="cloze-config">{{Before|After|OnlyContext|RevelAll|InactiveHints}}</template>
-<template id="cloze-source">{{Text}}</template>
+<template id="cloze-source">
+	<!--
+    Uncomment and adjust if MathJax style autodetection doesn't work for you.
+    <div style="display: none">
+      \[
+        \renewcommand\AnkiClozeQ[1]{\mathbf{\color{blue} #1}}
+        \renewcommand\AnkiClozeA[1]{\AnkiClozeQ{#1}}
+      \]
+    </div>
+  -->
+  {{Text}}
+</template>
 <div id="rendered-cloze"></div>
 {{Back Extra}}
 

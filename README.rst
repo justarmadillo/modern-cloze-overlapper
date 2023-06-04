@@ -80,16 +80,50 @@ Recall All Clozes Card
 If you need an extra card that asks you for all the clozes at once, add another cloze
 with ``ask-all`` in its content, e.g. ``{{c99::ask-all}}``.
 
+Styling of Clozes inside MathJax
+--------------------------------
+
+CSS ``.cloze`` class doesn't apply inside MathJax. The styling of MathJax clozes is relegated
+to TeX macros: ``\AnkiClozeQ`` on the front of the card, and ``\AnkiClozeA`` on the back
+of the card.
+
+By default, ``\AnkiClozeA`` is identical to ``\AnkiClozeQ``. The style of ``\AnkiClozeQ`` is taken
+from the ``.cloze`` class:
+
+- If ``cloze { color: ... }`` is `parsable as RGB`__,
+  ``\AnkiClozeQ`` will have ``\color[RGB]{RRR, GGG, BBB}``.
+
+  __ https://www.w3.org/TR/css-color-4/#serializing-sRGB-values
+
+- If ``cloze { font-style: ... }`` is either oblique or italic,
+  ``\AnkiClozeQ`` will have ``\mathit``.
+
+- If ``cloze { font-weight: ... }`` is bold or greater or equal to 700,
+  ``\AnkiClozeQ`` will have ``\mathbf``.
+
+You can always uncomment the following block in both ``front.html`` and ``back.html``,
+and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as you see fit.
+
+.. code:: html
+
+  <!--
+    Uncomment and adjust if MathJax style autodetection doesn't work for you.
+    \[
+      \renewcommand\AnkiClozeQ[1]{\mathbf{\color{blue} #1}}
+      \renewcommand\AnkiClozeA[1]{\AnkiClozeQ{#1}}
+    \]
+  -->
+
 Reloading ``_cloze-overlapper.mjs``
 -----------------------------------
 
 JavaScript modules, such as ``_cloze-overlapper.mjs``, are loaded exactly once and never reloaded
-(unless you restart Anki). However, you can use dummy query parameter to reload the module
-without restarting Anki:
+(unless you restart Anki). However, you can use a dummy query parameter, such as ``?dev=1``,
+to reload the module without restarting Anki:
 
 .. code:: javascript
 
-  import { renderClozes } from '/_cloze-overlapper.mjs?dev=1';
+  const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.mjs?dev=1`);
 
 ``dev``-counter must be incremented after every modification of ``_cloze-overlapper.mjs``.
 When the development is complete, ``dev`` query parameter can be removed and Anki restarted.

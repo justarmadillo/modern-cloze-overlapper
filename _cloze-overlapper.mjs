@@ -117,7 +117,7 @@ class ClozeNode extends NodeArray {
     }
 }
 
-const NEXT_TOKEN_RE = /\{\{c[1-9]\d*::|\}\}|$/g;
+const NEXT_TOKEN_RE = /\{\{c\d+::|\}\}|$/g;
 
 // https://github.com/ankitects/anki/blob/main/rslib/src/cloze.rs
 // parse_text_with_clozes()
@@ -201,7 +201,7 @@ const MATHJAX_RE = /\\\(.*?\\\)|\\\[.*?\\\]/sg;
 //
 // https://github.com/ankitects/anki/blob/main/rslib/src/text.rs
 // strip_html_preserving_entities()
-export function stripHtmlFromMathJax(html) {
+export function stripHtmlFromMathJax(html, cardInfo) {
     const parser = new DOMParser();
     MATHJAX_RE.lastIndex = 0;
     return html.replaceAll(MATHJAX_RE, mathjax => {
@@ -209,6 +209,10 @@ export function stripHtmlFromMathJax(html) {
         ['script', 'style'].forEach(t =>
             Array.prototype.forEach.call(dom.getElementsByTagName(t), e => e.remove())
         );
+        Array.prototype.forEach.call(dom.querySelectorAll('span.cloze'), e => {
+            e.prepend(cardInfo.isBack ? '\\AnkiClozeA{' : '\\AnkiClozeQ{');
+            e.append('}')
+        });
         // Strip tags and encode entities.
         dom.body.innerText = dom.body.textContent;
         return dom.body.innerHTML;
@@ -234,7 +238,45 @@ function revealAllCallback(e) {
     doRenderClozes({ revealAllClozes: true }, () => { target.hidden = true; });
 }
 
-const CARD_NUM_RE = /(?<=\bcard)[1-9]\d*\b/;
+function defineMathJaxClozeCommands(clozeContainer) {
+    // Not using querySelector('span.cloze')
+    // since stripHtmlFromMathJax might have removed all of them.
+    const styleTest = document.createElement('span');
+    styleTest.className = 'cloze';
+    clozeContainer.append(styleTest);
+    const clozeStyle = window.getComputedStyle(styleTest);
+    const clozeColour = clozeStyle.color;
+    const clozeFontStyle = clozeStyle.fontStyle;
+    const clozeFontWeight = clozeStyle.fontWeight;
+    styleTest.remove();
+
+    let ankiClozeQ = '#1';
+    // https://www.w3.org/TR/css-color-4/#serializing-sRGB-values
+    const rgbStartIdx = clozeColour.startsWith('rgb(') ? 4
+                      : clozeColour.startsWith('rgba(') ? 5
+                      : -1;
+    if (rgbStartIdx !== -1) {
+        const rgb = clozeColour.substring(rgbStartIdx, clozeColour.length - 1).split(', ')
+                               .slice(0, 3).map(Math.round).join(', ');
+        ankiClozeQ = String.raw`\color[RGB]{${rgb}} ${ankiClozeQ}`;
+    }
+    if (clozeFontStyle === 'italic' || clozeFontStyle.startsWith('oblique')) {
+        ankiClozeQ = String.raw`\mathit{${ankiClozeQ}}`;
+    }
+    if (+clozeFontWeight >= 700) {
+        ankiClozeQ = String.raw`\mathbf{${ankiClozeQ}}`;
+    }
+
+    const mathJaxClozeCmd = document.createElement('div');
+    mathJaxClozeCmd.style.display = 'none';
+    mathJaxClozeCmd.textContent = String.raw`\[
+        \newcommand\AnkiClozeQ[1]{${ankiClozeQ}}
+        \newcommand\AnkiClozeA[1]{\AnkiClozeQ{#1}}
+    \]`;
+    clozeContainer.prepend(mathJaxClozeCmd);
+}
+
+const CARD_NUM_RE = /(?<=\bcard)\d+\b/;
 
 function doRenderClozes(config, postRender) {
     config = { ...parseConfig(), ...config };
@@ -252,9 +294,11 @@ function doRenderClozes(config, postRender) {
         hasUnrevealedClozes: false
     };
 
-    const renderedCloze = stripHtmlFromMathJax(parseCloze(
-        document.getElementById('cloze-source').innerHTML, config, cardInfo
-    ).render(config, cardInfo));
+    const renderedCloze = stripHtmlFromMathJax(
+        parseCloze(document.getElementById('cloze-source').innerHTML,
+                   config, cardInfo).render(config, cardInfo),
+        cardInfo
+    );
 
     return new Promise(resolve => {
         requestAnimationFrame(() => {
@@ -263,12 +307,14 @@ function doRenderClozes(config, postRender) {
                     'click', revealAllCallback, { once: true, passive: true });
                 revealAllButton.hidden = false;
             }
-            document.getElementById('rendered-cloze').innerHTML = renderedCloze;
+            const clozeContainer = document.getElementById('rendered-cloze');
+            clozeContainer.innerHTML = renderedCloze;
             if (postRender) {
                 postRender();
             }
             // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
             if (typeof MathJax !== 'undefined') {
+                defineMathJaxClozeCommands(clozeContainer);
                 // Anki doesn't seem to support auto-numbering, but nonetheless.
                 MathJax.startup.document.state(0);
                 MathJax.typesetClear();
