@@ -19,15 +19,41 @@
   <button id="reveal-all-button" hidden>Reveal All</button>
 </div>
 
-<script type="module">
-  try {
-      // anki-media-export: "_cloze-overlapper.mjs"
-      // https://github.com/ankidroid/Anki-Android/pull/7764
-      const mediaRoot = globalThis.AnkiDroidJS ? 'https://appassets.androidplatform.net'
-                                               : globalThis.ankiPlatform === 'desktop' ? '' : '.';
-      const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.mjs`);
-      await ClozeOverlapper.renderClozes();
-  } catch (e) {
-      document.getElementById('rendered-cloze').textContent = e;
-  }
+<script>
+  // anki-export-media: "_cloze-overlapper.mjs"
+  (() => {
+      'use strict';
+
+      const CLOZE_CONTAINER = document.getElementById('rendered-cloze');
+
+      function reportError(e) {
+          CLOZE_CONTAINER.textContent = e;
+      }
+
+      async function renderClozes() {
+          try {
+              // https://github.com/ankidroid/Anki-Android/pull/7764
+              const mediaRoot = globalThis.AnkiDroidJS
+                              ? 'https://appassets.androidplatform.net'
+                              : globalThis.ankiPlatform === 'desktop' ? '' : '.';
+              const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.mjs`);
+              await ClozeOverlapper.renderClozes();
+          } catch (e) {
+              reportError(e);
+          }
+      }
+
+      try {
+          try {
+              require('anki/reviewer').onUpdateHook.push(renderClozes);
+          } catch (e) {
+              if (!e?.message.includes('Cannot require')) {
+                  throw e;
+              }
+              onUpdateHook.push(renderClozes);
+          }
+      } catch (e) {
+          reportError(e);
+      }
+  })();
 </script>

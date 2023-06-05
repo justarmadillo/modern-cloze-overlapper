@@ -1,6 +1,6 @@
-function any(iter, test) {
-    for (const i of iter) {
-        if (test(i)) {
+function any(iterable, predicate) {
+    for (const i of iterable) {
+        if (predicate(i)) {
             return true;
         }
     }
@@ -219,9 +219,58 @@ export function stripHtmlFromMathJax(html, cardInfo) {
     });
 }
 
+function defineMathJaxClozeCommands(clozeContainer) {
+    // Not using querySelector('span.cloze')
+    // since stripHtmlFromMathJax might have removed all of them.
+    const styleTest = document.createElement('span');
+    styleTest.className = 'cloze';
+    clozeContainer.append(styleTest);
+    const clozeStyle = window.getComputedStyle(styleTest);
+    const { color, fontStyle, fontWeight } = clozeStyle;
+    styleTest.remove();
+
+    let ankiClozeQ = '#1';
+    // https://www.w3.org/TR/css-color-4/#serializing-sRGB-values
+    const rgbStartIdx = color.startsWith('rgb(') ? 4
+                      : color.startsWith('rgba(') ? 5
+                      : -1;
+    if (rgbStartIdx !== -1) {
+        const rgb = color.substring(rgbStartIdx, color.length - 1).split(', ')
+                         .slice(0, 3).map(Math.round).join(', ');
+        ankiClozeQ = String.raw`\color[RGB]{${rgb}} ${ankiClozeQ}`;
+    }
+    if (fontStyle === 'italic' || fontStyle.startsWith('oblique')) {
+        ankiClozeQ = String.raw`\mathit{${ankiClozeQ}}`;
+    }
+    if (+fontWeight >= 700) {
+        ankiClozeQ = String.raw`\mathbf{${ankiClozeQ}}`;
+    }
+
+    const mathJaxClozeCmd = document.createElement('div');
+    mathJaxClozeCmd.style.display = 'none';
+    mathJaxClozeCmd.textContent = String.raw`\[
+        \newcommand\AnkiClozeQ[1]{${ankiClozeQ}}
+        \newcommand\AnkiClozeA[1]{\AnkiClozeQ{#1}}
+    \]`;
+    clozeContainer.prepend(mathJaxClozeCmd);
+}
+
+function typesetMathJax() {
+    // AnkiDroid loads MathJax only when \( and/or \[ are present.
+    if (typeof MathJax === 'undefined') {
+        return;
+    }
+    // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
+    // Anki doesn't seem to support auto-numbering, but nonetheless.
+    MathJax.startup.document.state(0);
+    MathJax.typesetClear();
+    MathJax.texReset();
+    return MathJax.typesetPromise();
+}
+
 const CONFIG_SPLIT_RE = /[,\s|.]+/;
 
-export function parseConfig(elementId = 'cloze-config') {
+function parseConfig(elementId = 'cloze-config') {
     const config = document.getElementById(elementId).content.textContent.split(CONFIG_SPLIT_RE);
 
     const contextBefore = config[0] === '0' ? 0 : Math.max(+config[0] || 1, 1);
@@ -235,50 +284,15 @@ export function parseConfig(elementId = 'cloze-config') {
 
 function revealAllCallback(e) {
     const target = e.currentTarget;
-    doRenderClozes({ revealAllClozes: true }, () => { target.hidden = true; });
-}
-
-function defineMathJaxClozeCommands(clozeContainer) {
-    // Not using querySelector('span.cloze')
-    // since stripHtmlFromMathJax might have removed all of them.
-    const styleTest = document.createElement('span');
-    styleTest.className = 'cloze';
-    clozeContainer.append(styleTest);
-    const clozeStyle = window.getComputedStyle(styleTest);
-    const clozeColour = clozeStyle.color;
-    const clozeFontStyle = clozeStyle.fontStyle;
-    const clozeFontWeight = clozeStyle.fontWeight;
-    styleTest.remove();
-
-    let ankiClozeQ = '#1';
-    // https://www.w3.org/TR/css-color-4/#serializing-sRGB-values
-    const rgbStartIdx = clozeColour.startsWith('rgb(') ? 4
-                      : clozeColour.startsWith('rgba(') ? 5
-                      : -1;
-    if (rgbStartIdx !== -1) {
-        const rgb = clozeColour.substring(rgbStartIdx, clozeColour.length - 1).split(', ')
-                               .slice(0, 3).map(Math.round).join(', ');
-        ankiClozeQ = String.raw`\color[RGB]{${rgb}} ${ankiClozeQ}`;
-    }
-    if (clozeFontStyle === 'italic' || clozeFontStyle.startsWith('oblique')) {
-        ankiClozeQ = String.raw`\mathit{${ankiClozeQ}}`;
-    }
-    if (+clozeFontWeight >= 700) {
-        ankiClozeQ = String.raw`\mathbf{${ankiClozeQ}}`;
-    }
-
-    const mathJaxClozeCmd = document.createElement('div');
-    mathJaxClozeCmd.style.display = 'none';
-    mathJaxClozeCmd.textContent = String.raw`\[
-        \newcommand\AnkiClozeQ[1]{${ankiClozeQ}}
-        \newcommand\AnkiClozeA[1]{\AnkiClozeQ{#1}}
-    \]`;
-    clozeContainer.prepend(mathJaxClozeCmd);
+    renderClozes({ revealAllClozes: true }, () => {
+        target.hidden = true;
+        return typesetMathJax();
+    });
 }
 
 const CARD_NUM_RE = /(?<=\bcard)\d+\b/;
 
-function doRenderClozes(config, postRender) {
+export function renderClozes(config, onRender) {
     config = { ...parseConfig(), ...config };
     const revealAllButton = document.getElementById('reveal-all-button');
     const cardInfo = {
@@ -309,28 +323,11 @@ function doRenderClozes(config, postRender) {
             }
             const clozeContainer = document.getElementById('rendered-cloze');
             clozeContainer.innerHTML = renderedCloze;
-            if (postRender) {
-                postRender();
-            }
-            // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
+            // AnkiDroid loads MathJax only when \( and/or \[ are present.
             if (typeof MathJax !== 'undefined') {
                 defineMathJaxClozeCommands(clozeContainer);
-                // Anki doesn't seem to support auto-numbering, but nonetheless.
-                MathJax.startup.document.state(0);
-                MathJax.typesetClear();
-                MathJax.texReset();
-                resolve(MathJax.typesetPromise());
-            } else {
-                resolve();
             }
+            resolve(onRender?.());
         });
     });
-}
-
-export function renderClozes(config) {
-    // AnkiDroid loads MathJax only when \( and/or \[ are present.
-    if (typeof MathJax === 'undefined') {
-        return doRenderClozes(config);
-    }
-    return MathJax.startup.promise = MathJax.startup.promise.then(() => doRenderClozes(config));
 }
