@@ -13,17 +13,12 @@ In addition to ``anki-simple-cloze-overlapper`` features, support was added for:
 - Clozes in MathJax.
 
 The code was tested on Anki Desktop and AnkiDroid; the latter requires the latest
-`Android System WebView`__ to be installed. In principle, it should be usable on Anki Web
-and Anki Mobile (but it hasn't been tested).
+`Android System WebView`__ to be installed. (Nested clozes don't work on AnkiDroid, see
+https://github.com/ankidroid/Anki-Android/issues/13770.)
 
 __ https://play.google.com/store/apps/details?id=com.google.android.webview
 
-Modern Cloze Overlapper on AnkiDroid has several limitations:
-
-- Android 10+ is required until https://github.com/ankidroid/Anki-Android/pull/13899 is merged.
-
-- Nested clozes don't work on AnkiDroid, see
-  https://github.com/ankidroid/Anki-Android/issues/13770.
+In principle, it should be usable on Anki Web and Anki Mobile (but it hasn't been tested).
 
 How to Use
 ----------
@@ -36,6 +31,18 @@ How to Use
 #. Add a rendering configuration field named ``Before|After|OnlyContext|RevelAll|InactiveHints``.
 #. Put the content of `<front.html>`_ into note's Front Template.
 #. Put the content of `<back.html>`_ into note's Back Template.
+#. (Optional AnkiDroid compatibility) Add
+
+   .. code:: css
+
+     .android .card:not(.mathjax-rendered) {
+         visibility: hidden;
+     }
+
+   to note's Styling to hide everything until ``onUpdateHook`` is executed.
+   See AnkiDroid's `Advanced formatting`__ for details.
+
+   __ https://github.com/ankidroid/Anki-Android/wiki/Advanced-formatting#hide-content-during-execution-of-onupdatehook
 
 Rendering Configuration
 -----------------------
