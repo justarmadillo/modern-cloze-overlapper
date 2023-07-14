@@ -106,7 +106,7 @@ from the ``.cloze`` class:
   ``\AnkiClozeQ`` will have ``\mathit``.
 
 - If ``cloze { font-weight: ... }`` is bold or greater or equal to 700,
-  ``\AnkiClozeQ`` will have ``\mathbf``.
+  ``\AnkiClozeQ`` will have ``\boldsymbol``.
 
 You can always uncomment the following block in both ``front.html`` and ``back.html``,
 and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as you see fit.
@@ -116,7 +116,7 @@ and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as you see fit.
   <!--
     Uncomment and adjust if MathJax style autodetection doesn't work for you.
     \[
-      \renewcommand\AnkiClozeQ[1]{\mathbf{\color{blue} #1}}
+      \renewcommand\AnkiClozeQ[1]{\boldsymbol{\color{blue} #1}}
       \renewcommand\AnkiClozeA[1]{\AnkiClozeQ{#1}}
     \]
   -->

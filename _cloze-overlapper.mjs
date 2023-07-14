@@ -243,7 +243,7 @@ function defineMathJaxClozeCommands(clozeContainer) {
         ankiClozeQ = String.raw`\mathit{${ankiClozeQ}}`;
     }
     if (+fontWeight >= 700) {
-        ankiClozeQ = String.raw`\mathbf{${ankiClozeQ}}`;
+        ankiClozeQ = String.raw`\boldsymbol{${ankiClozeQ}}`;
     }
 
     const mathJaxClozeCmd = document.createElement('div');
