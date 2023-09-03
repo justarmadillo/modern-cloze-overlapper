@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strict": true,
+
+        "module": "ESNext",
+        "moduleResolution": "NodeNext",
+
+        "newLine": "LF",
+        "noEmit": true,
+
+        "checkJs": true,
+
+        "esModuleInterop": true,
+        "verbatimModuleSyntax": true,
+
+        "target": "ESNext"
+    }
+}

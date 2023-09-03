@@ -11,6 +11,7 @@ In addition to ``anki-simple-cloze-overlapper`` features, support was added for:
 
 - Nested clozes.
 - Clozes in MathJax.
+- Cloze Generator.
 
 The code was tested on Anki Desktop and AnkiDroid; the latter requires the latest
 `Android System WebView`__ to be installed. (Nested clozes don't work on AnkiDroid, see
@@ -28,9 +29,9 @@ How to Use
    __ https://docs.ankiweb.net/media.html#manually-adding-media
 
 #. Create a new note type by cloning the built-in Cloze.
-#. Add a rendering configuration field named ``Before|After|OnlyContext|RevelAll|InactiveHints``.
-#. Put the content of `<front.html>`_ into note's Front Template.
-#. Put the content of `<back.html>`_ into note's Back Template.
+#. Add a rendering configuration field named ``Before|After|OnlyContext|RevealAll|InactiveHints``.
+#. Put the content of `<front.template.anki>`_ into note's Front Template.
+#. Put the content of `<back.template.anki>`_ into note's Back Template.
 #. (Optional AnkiDroid compatibility) Add
 
    .. code:: css
@@ -47,7 +48,7 @@ How to Use
 Rendering Configuration
 -----------------------
 
-Template's field ``Before|After|OnlyContext|RevelAll|InactiveHints`` controls the rendering
+Template's field ``Before|After|OnlyContext|RevealAll|InactiveHints`` controls the rendering
 of clozes. Individual parameters are separated by either spaces, commas, pipes or dots.
 Omitted rightmost parameters all take default values.
 
@@ -108,8 +109,8 @@ from the ``.cloze`` class:
 - If ``cloze { font-weight: ... }`` is bold or greater or equal to 700,
   ``\AnkiClozeQ`` will have ``\boldsymbol``.
 
-You can always uncomment the following block in both ``front.html`` and ``back.html``,
-and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as you see fit.
+You can always uncomment the following block in both ``front.template.anki``
+and ``back.template.anki``, and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as you see fit.
 
 .. code:: html
 
@@ -124,6 +125,19 @@ and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as you see fit.
 Reloading ``_cloze-overlapper.mjs``
 -----------------------------------
 
+If you make changes to ``_cloze-overlapper.mjs``, you'll have to restart Anki.
+``_cloze-overlapper.mjs`` defines a custom element ``<cloze-generator>`` and any attempt
+to redefine it (e.g. by loading ``_cloze-overlapper.mjs?dev=1``) will throw an error.
+
+.. |strike-start| raw:: html
+
+  <strike>
+
+.. |strike-end| raw:: html
+
+  </strike>
+
+|strike-start|
 JavaScript modules, such as ``_cloze-overlapper.mjs``, are loaded exactly once and never reloaded
 (unless you restart Anki). However, you can use a dummy query parameter, such as ``?dev=1``,
 to reload the module without restarting Anki:
@@ -134,3 +148,4 @@ to reload the module without restarting Anki:
 
 ``dev``-counter must be incremented after every modification of ``_cloze-overlapper.mjs``.
 When the development is complete, ``dev`` query parameter can be removed and Anki restarted.
+|strike-end|

@@ -1,5 +1,7 @@
+<cloze-generator></cloze-generator>
+
 <template id="anki-cloze">{{cloze:Text}}</template>
-<template id="cloze-config">{{Before|After|OnlyContext|RevelAll|InactiveHints}}</template>
+<template id="cloze-config">{{Before|After|OnlyContext|RevealAll|InactiveHints}}</template>
 <template id="cloze-source">
 	<!--
     Uncomment and adjust if MathJax style autodetection doesn't work for you.
