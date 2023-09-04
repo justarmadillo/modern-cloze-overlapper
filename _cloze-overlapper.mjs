@@ -603,18 +603,28 @@ function defineMathJaxClozeCommands(clozeContainer) {
     clozeContainer.prepend(mathJaxClozeCmd);
 }
 
+/**
+ * @type {{
+ *     startup: { document: { state(s: number): void } };
+ *     typesetClear(): void;
+ *     texReset(): void;
+ *     typesetPromise(): Promise<void>
+ * } | undefined}
+ */
+const MATH_JAX = /** @type {any} */ (globalThis).MathJax;
+
 /** @returns {Promise<void>} */
 function typesetMathJax() {
     // AnkiDroid loads MathJax only when \( and/or \[ are present.
-    if (typeof MathJax === 'undefined') {
+    if (typeof MATH_JAX === 'undefined') {
         return Promise.resolve();
     }
     // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
     // Anki doesn't seem to support auto-numbering, but nonetheless.
-    MathJax.startup.document.state(0);
-    MathJax.typesetClear();
-    MathJax.texReset();
-    return MathJax.typesetPromise();
+    MATH_JAX.startup.document.state(0);
+    MATH_JAX.typesetClear();
+    MATH_JAX.texReset();
+    return MATH_JAX.typesetPromise();
 }
 
 const CONFIG_SPLIT_RE = /[,\s|.]+/;
@@ -686,7 +696,7 @@ export function renderClozes(partialConf, onRender) {
                 document.getElementById('rendered-cloze'));
             clozeContainer.innerHTML = renderedCloze;
             // AnkiDroid loads MathJax only when \( and/or \[ are present.
-            if (typeof MathJax !== 'undefined') {
+            if (typeof MATH_JAX !== 'undefined') {
                 defineMathJaxClozeCommands(clozeContainer);
             }
             resolve(onRender?.());
