@@ -125,27 +125,7 @@ and ``back.template.anki``, and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as 
 Reloading ``_cloze-overlapper.mjs``
 -----------------------------------
 
-If you make changes to ``_cloze-overlapper.mjs``, you'll have to restart Anki.
-``_cloze-overlapper.mjs`` defines a custom element ``<cloze-generator>`` and any attempt
-to redefine it (e.g. by loading ``_cloze-overlapper.mjs?dev=1``) will throw an error.
-
-.. |strike-start| raw:: html
-
-  <strike>
-
-.. |strike-end| raw:: html
-
-  </strike>
-
-|strike-start|
-JavaScript modules, such as ``_cloze-overlapper.mjs``, are loaded exactly once and never reloaded
-(unless you restart Anki). However, you can use a dummy query parameter, such as ``?dev=1``,
-to reload the module without restarting Anki:
-
-.. code:: javascript
-
-  const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.mjs?dev=1`);
-
-``dev``-counter must be incremented after every modification of ``_cloze-overlapper.mjs``.
-When the development is complete, ``dev`` query parameter can be removed and Anki restarted.
-|strike-end|
+JavaScript modules are not reloaded from disk automatically. In order to reload
+``_cloze-overlapper.mjs``, open DevTools on the Network tab, check “Disable cache”,
+and press :kbd:`Ctrl + Shift + R`. It empties the card's page completely, but after navigating to
+the next/previous card and back the module is reloaded.

@@ -566,6 +566,31 @@ export function stripHtmlFromMathJax(html, cardInfo) {
     });
 }
 
+const convertToRgba = (() => {
+    /** @type {OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null} */
+    let context = null;
+
+    /**
+     * @param {string} cssColor
+     * @return {Uint8ClampedArray}
+     * */
+    return cssColor => {
+        // Android WebView doesn't support offscreen 2D canvas.
+        // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas/getContext#browser_compatibility
+        context ??= new OffscreenCanvas(1, 1).getContext('2d', { willReadFrequently: true });
+        if (!context) {
+            const canvas = document.createElement('canvas');
+            canvas.height = canvas.width = 1;
+            context = /** @type {CanvasRenderingContext2D} */ (
+                canvas.getContext('2d', { willReadFrequently: true }));
+        }
+        context.clearRect(0, 0, 1, 1);
+        context.fillStyle = cssColor;
+        context.fillRect(0, 0, 1, 1);
+        return context.getImageData(0, 0, 1, 1).data;
+    };
+})();
+
 /** @param {HTMLDivElement} clozeContainer */
 function defineMathJaxClozeCommands(clozeContainer) {
     // Not using querySelector('span.cloze')
@@ -582,11 +607,10 @@ function defineMathJaxClozeCommands(clozeContainer) {
     const rgbStartIdx = color.startsWith('rgb(') ? 4
                       : color.startsWith('rgba(') ? 5
                       : -1;
-    if (rgbStartIdx !== -1) {
-        const rgb = color.substring(rgbStartIdx, color.length - 1).split(', ')
-                         .slice(0, 3).map(s => Math.round(Number(s))).join(', ');
-        ankiClozeQ = String.raw`\color[RGB]{${rgb}} ${ankiClozeQ}`;
-    }
+    const rgb = rgbStartIdx !== -1
+              ? color.substring(rgbStartIdx, color.length - 1).split(', ').map(s => Math.round(+s))
+              : convertToRgba(color); // Slow path.
+    ankiClozeQ = String.raw`\color[RGB]{${rgb.slice(0, 3).join(', ')}} ${ankiClozeQ}`;
     if (fontStyle === 'italic' || fontStyle.startsWith('oblique')) {
         ankiClozeQ = String.raw`\mathit{${ankiClozeQ}}`;
     }
