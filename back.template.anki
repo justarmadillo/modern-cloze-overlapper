@@ -22,7 +22,7 @@
 </div>
 
 <script>(() => {
-    // anki-export-media: "_cloze-overlapper.mjs"
+    // anki-export-media: '_cloze-overlapper.mjs'
     'use strict';
 
     const CLOZE_CONTAINER = document.getElementById('rendered-cloze');
@@ -31,14 +31,15 @@
         CLOZE_CONTAINER.textContent = e;
     }
 
-    async function renderClozes() {
+    async function renderClozes(typesetMathJax = false) {
         try {
             // https://github.com/ankidroid/Anki-Android/pull/7764
             const mediaRoot = globalThis.AnkiDroidJS
                             ? 'https://appassets.androidplatform.net'
                             : globalThis.ankiPlatform === 'desktop' ? '' : '.';
             const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.mjs`);
-            await ClozeOverlapper.renderClozes();
+            await ClozeOverlapper.renderClozes(
+                undefined, typesetMathJax ? ClozeOverlapper.typesetMathJax : undefined);
         } catch (e) {
             reportError(e);
         }
@@ -54,11 +55,21 @@
                 }
             }
         }
-        return onUpdateHook;
+        if (typeof onUpdateHook !== 'undefined') {
+            return onUpdateHook;
+        }
     }
 
     try {
-        getUpdateHook().push(renderClozes);
+        const updateHook = getUpdateHook();
+        if (updateHook) {
+            updateHook.push(renderClozes);
+        } else if (typeof MathJax !== 'undefined') {
+            // AnkiDroid loads MathJax only if \( and/or \[ are present.
+            MathJax.startup.promise.then(() => renderClozes(true));
+        } else {
+            renderClozes();
+        }
     } catch (e) {
         reportError(e);
     }

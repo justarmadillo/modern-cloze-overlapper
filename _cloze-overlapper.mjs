@@ -638,7 +638,7 @@ function defineMathJaxClozeCommands(clozeContainer) {
 const MATH_JAX = /** @type {any} */ (globalThis).MathJax;
 
 /** @returns {Promise<void>} */
-function typesetMathJax() {
+export function typesetMathJax() {
     // AnkiDroid loads MathJax only when \( and/or \[ are present.
     if (typeof MATH_JAX === 'undefined') {
         return Promise.resolve();
@@ -719,10 +719,11 @@ export function renderClozes(partialConf, onRender) {
             const clozeContainer = /** @type {HTMLDivElement} */ (
                 document.getElementById('rendered-cloze'));
             clozeContainer.innerHTML = renderedCloze;
-            // AnkiDroid loads MathJax only when \( and/or \[ are present.
+            // AnkiDroid loads MathJax only if \( and/or \[ are present.
             if (typeof MATH_JAX !== 'undefined') {
                 defineMathJaxClozeCommands(clozeContainer);
             }
+            // Called within the requestAnimationFrame(); not in promise's then().
             resolve(onRender?.());
         });
     });

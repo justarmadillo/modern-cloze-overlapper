@@ -13,7 +13,7 @@
         "strict": true,
 
         "module": "ESNext",
-        "moduleResolution": "NodeNext",
+        "moduleResolution": "Classic",
 
         "newLine": "LF",
         "noEmit": true,
