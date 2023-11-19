@@ -24,7 +24,7 @@ In principle, it should be usable on Anki Web and Anki Mobile (but it hasn't bee
 How to Use
 ----------
 
-#. Place the `<_cloze-overlapper.mjs>`_ into Anki's `collection.media folder`__.
+#. Place the `<_cloze-overlapper.js>`_ into Anki's `collection.media folder`__.
 
    __ https://docs.ankiweb.net/media.html#manually-adding-media
 
@@ -122,10 +122,10 @@ and ``back.template.anki``, and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as 
     \]
   -->
 
-Reloading ``_cloze-overlapper.mjs``
+Reloading ``_cloze-overlapper.js``
 -----------------------------------
 
 JavaScript modules are not reloaded from disk automatically. In order to reload
-``_cloze-overlapper.mjs``, open DevTools on the Network tab, check “Disable cache”,
+``_cloze-overlapper.js``, open DevTools on the Network tab, check “Disable cache”,
 and press :kbd:`Ctrl + Shift + R`. It empties the card's page completely, but after navigating to
 the next/previous card and back the module is reloaded.

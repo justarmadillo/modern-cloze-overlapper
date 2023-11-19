@@ -37,7 +37,7 @@
             const mediaRoot = globalThis.AnkiDroidJS
                             ? 'https://appassets.androidplatform.net'
                             : globalThis.ankiPlatform === 'desktop' ? '' : '.';
-            const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.mjs`);
+            const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.js`);
             await ClozeOverlapper.renderClozes(
                 undefined, typesetMathJax ? ClozeOverlapper.typesetMathJax : undefined);
         } catch (e) {
