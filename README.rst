@@ -13,13 +13,14 @@ In addition to ``anki-simple-cloze-overlapper`` features, support was added for:
 - Clozes in MathJax.
 - Cloze Generator.
 
-The code was tested on Anki Desktop and AnkiDroid; the latter requires the latest
-`Android System WebView`__ to be installed. (Nested clozes don't work on AnkiDroid, see
-https://github.com/ankidroid/Anki-Android/issues/13770.)
+The code was tested on all Anki platforms: Desktop, AnkiDroid, AnkiWeb and AnkiMobile.
+
+AnkiDroid requires the latest `Android System WebView`__ to be installed.
 
 __ https://play.google.com/store/apps/details?id=com.google.android.webview
 
-In principle, it should be usable on Anki Web and Anki Mobile (but it hasn't been tested).
+AnkiWeb lacks the hooks necessary to await the initialisation of MathJax,
+which may lead to problems with equation rendering.
 
 How to Use
 ----------

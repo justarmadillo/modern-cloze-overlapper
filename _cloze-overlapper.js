@@ -40,12 +40,12 @@ export function makeClozeDeletions(str, separator, numPrompts = 1) {
         const textWithHint = str.substring(lastIdx, m.index);
         const hintStart = textWithHint.indexOf('::');
         const text = hintStart > -1 ? textWithHint.substring(0, hintStart) : textWithHint;
-        const hint = hintStart > -1 ? textWithHint.substring(hintStart + 2) : '';
+        const hint = hintStart > -1 ? `::${textWithHint.substring(hintStart + 2)}` : '';
 
         const prevRange = clozeRange(i - 1);
         splits.push(
             text,
-            `::${hint}}}`.repeat(prevRange[1] - prevRange[0]),
+            `${hint}}}`.repeat(prevRange[1] - prevRange[0]),
             m[0],
             Array.from(range(...clozeRange(i))).map(i => `{{c${i}::`).join('')
         );
@@ -645,7 +645,11 @@ export function typesetMathJax() {
     }
     // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
     // Anki doesn't seem to support auto-numbering, but nonetheless.
-    MATH_JAX.startup.document.state(0);
+
+    // AnkiWeb fails to assign MATH_JAX.startup.document before running this script.
+    if (MATH_JAX.startup.document) {
+        MATH_JAX.startup.document.state(0);
+    }
     MATH_JAX.typesetClear();
     MATH_JAX.texReset();
     return MATH_JAX.typesetPromise();

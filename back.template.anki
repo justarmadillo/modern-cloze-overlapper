@@ -22,7 +22,7 @@
 </div>
 
 <script>(() => {
-    // anki-export-media: '_cloze-overlapper.mjs'
+    // anki-export-media: '_cloze-overlapper.js'
     'use strict';
 
     const CLOZE_CONTAINER = document.getElementById('rendered-cloze');
@@ -66,7 +66,12 @@
             updateHook.push(renderClozes);
         } else if (typeof MathJax !== 'undefined') {
             // AnkiDroid loads MathJax only if \( and/or \[ are present.
-            MathJax.startup.promise.then(() => renderClozes(true));
+            // AnkiWeb fails to assign MATH_JAX.startup.document before running this script.
+            if (MathJax.startup.promise) {
+                MathJax.startup.promise.then(() => renderClozes(true));
+            } else {
+                renderClozes(true);
+            }
         } else {
             renderClozes();
         }
