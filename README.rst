@@ -65,7 +65,7 @@ The parameters are as follows:
   Show clozes only within the context (before + current + after).
   Set to ``true`` for e.g. long lyrics/poems.
 
-``RevelAll`` (Boolean ``true`` or ``false``, defaults to ``false``)
+``RevealAll`` (Boolean ``true`` or ``false``, defaults to ``false``)
   Reveal all clozes on the back of the card. By default, only currently active clozes are revealed.
   (Context clozes are revealed even on cards' fronts.)
 
