@@ -19,13 +19,11 @@ AnkiDroid requires the latest `Android System WebView`__ to be installed.
 
 __ https://play.google.com/store/apps/details?id=com.google.android.webview
 
-AnkiWeb lacks the hooks necessary to await the initialisation of MathJax,
-which may lead to problems with equation rendering.
-
 How to Use
 ----------
 
-#. Place the `<_cloze-overlapper.js>`_ into Anki's `collection.media folder`__.
+#. Place `<_cloze-overlapper-loader.js>`_ and `<_cloze-overlapper.js>`_
+   into Anki's `collection.media folder`__.
 
    __ https://docs.ankiweb.net/media.html#manually-adding-media
 
@@ -99,10 +97,8 @@ of the card.
 By default, ``\AnkiClozeA`` is identical to ``\AnkiClozeQ``. The style of ``\AnkiClozeQ`` is taken
 from the ``.cloze`` class:
 
-- If ``cloze { color: ... }`` is `parsable as RGB`__,
-  ``\AnkiClozeQ`` will have ``\color[RGB]{RRR, GGG, BBB}``.
-
-  __ https://www.w3.org/TR/css-color-4/#serializing-sRGB-values
+- ``cloze { color: ... }`` is converted to RGB,
+  and ``\color[RGB]{RRR, GGG, BBB}`` is added to ``\AnkiClozeQ``.
 
 - If ``cloze { font-style: ... }`` is either oblique or italic,
   ``\AnkiClozeQ`` will have ``\mathit``.
@@ -130,3 +126,17 @@ JavaScript modules are not reloaded from disk automatically. In order to reload
 ``_cloze-overlapper.js``, open DevTools on the Network tab, check “Disable cache”,
 and press :kbd:`Ctrl + Shift + R`. It empties the card's page completely, but after navigating to
 the next/previous card and back the module is reloaded.
+
+Why JavaScript module?
+-----------------------------------
+
+Considering that
+
+#. a non-trivial amount of non-module code is required to load ``_cloze-overlapper.js``;
+#. reloading problems that a modularised solution ensues;
+
+one may ask a question why bother with a JS module in the first place? The answer is: rewriting
+``_cloze-overlapper.js`` as a non-module introduces a lot of flickering when flipping a cloze card
+from its front to its back. JS module doesn't have such a problem (or may be it's just
+less noticeable). Probably it has something to do with the fact that modules are loaded and parsed
+only once and not on every render.

@@ -294,7 +294,7 @@ const DEFAULT_HINT = '...';
  * @typedef {ClozeNode | TextNode} ClozeOrTextNode
  * @typedef {{ contextBefore: number, contextAfter: number, showOnlyContext: boolean,
  *             revealAllClozes: boolean, showInactiveHints: boolean }} RenderConfig
- * @typedef {{ cardNum: string, isBack: boolean,
+ * @typedef {{ cardNum: number, isBack: boolean,
  *             askAll: boolean, hasUnrevealedClozes: boolean }} CardInfo
  */
 
@@ -343,20 +343,20 @@ class TextNode {
 
 class ClozeNode extends NodeArray {
     /**
-     * @param {string} cardNum
+     * @param {number} cardNum
      * @param {Set<ClozeNode>} [parents]
      * @param {ClozeNode} [clozeBefore]
      */
     constructor(cardNum, parents, clozeBefore) {
         super();
 
-        /** @type {string} */
+        /** @type {number} */
         this.cardNum = cardNum;
 
         /** @type {Set<ClozeNode>} */
         this.parents = parents ?? new Set();
 
-        /** @type {Set<string>} */
+        /** @type {Set<number>} */
         this.childCardNums = new Set();
 
         /** @type {ClozeNode | undefined} */
@@ -404,7 +404,7 @@ class ClozeNode extends NodeArray {
     #makeClozeSpan(className, html) {
         const span = document.createElement('span');
         span.className = className;
-        span.dataset['ordinal'] = this.cardNum;
+        span.dataset['ordinal'] = String(this.cardNum);
         span.innerHTML = html;
         return span;
     }
@@ -451,7 +451,7 @@ class ClozeNode extends NodeArray {
     }
 }
 
-const NEXT_TOKEN_RE = /\{\{c\d+::|\}\}|$/g;
+const NEXT_TOKEN_RE = /\{\{c\d*[1-9]\d*::|\}\}|$/g;
 
 // https://github.com/ankitects/anki/blob/main/rslib/src/cloze.rs
 // parse_text_with_clozes()
@@ -490,7 +490,7 @@ export function parseCloze(clozeSrc, config, cardInfo) {
         if (m[0].startsWith('{{c')) {
             const clozeBefore = nestedClozes.findLast(
                 c => c.lastCloze)?.lastCloze ?? topLevel.lastCloze;
-            const c = new ClozeNode(m[0].substring(3, m[0].length - 2),
+            const c = new ClozeNode(parseInt(m[0].substring(3, m[0].length - 2), 10),
                                     nestedClozes.at(-1)?.parentsAndSelf, clozeBefore);
             nestedClozes.push(c);
             if (c.cardNum === cardInfo.cardNum) {
@@ -645,11 +645,7 @@ export function typesetMathJax() {
     }
     // https://docs.mathjax.org/en/latest/web/typeset.html#updating-previously-typeset-content
     // Anki doesn't seem to support auto-numbering, but nonetheless.
-
-    // AnkiWeb fails to assign MATH_JAX.startup.document before running this script.
-    if (MATH_JAX.startup.document) {
-        MATH_JAX.startup.document.state(0);
-    }
+    MATH_JAX.startup.document.state(0);
     MATH_JAX.typesetClear();
     MATH_JAX.texReset();
     return MATH_JAX.typesetPromise();
@@ -687,13 +683,15 @@ const CARD_NUM_RE = /(?<=\bcard)\d+\b/;
 
 /**
  * @param {Partial<RenderConfig>} partialConf
- * @param {() => Promise<void>} onRender
+ * @param {() => Promise<void>} [onRender]
  */
 export function renderClozes(partialConf, onRender) {
     const config = { ...parseConfig(), ...partialConf };
     const revealAllButton = document.getElementById('reveal-all-button');
+    // card# class is guaranteed to be present only if the script is invoked from onUpdateHook.
+    // ".cloze[data-ordinal]" is absent in MathJax clozes.
     const cardInfo = {
-        cardNum: (
+        cardNum: parseInt(
             document.body.className.match(CARD_NUM_RE)?.[0]
                 ?? document.getElementById('qa_box')?.className.match(CARD_NUM_RE)?.[0]
                 ?? /** @type {HTMLElement | null} */ (
@@ -701,7 +699,8 @@ export function renderClozes(partialConf, onRender) {
                            document.getElementById('anki-cloze')
                        ).content.querySelector('.cloze[data-ordinal]')
                    )?.dataset['ordinal']
-                ?? '1'
+                ?? '1',
+            10
         ),
         isBack: !!revealAllButton,
         askAll: false,

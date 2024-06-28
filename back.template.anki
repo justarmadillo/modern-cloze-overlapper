@@ -3,7 +3,7 @@
 <template id="anki-cloze">{{cloze:Text}}</template>
 <template id="cloze-config">{{Before|After|OnlyContext|RevealAll|InactiveHints}}</template>
 <template id="cloze-source">
-	<!--
+  <!--
     Uncomment and adjust if MathJax style autodetection doesn't work for you.
     <div style="display: none">
       \[
@@ -21,61 +21,5 @@
   <button id="reveal-all-button" hidden>Reveal All</button>
 </div>
 
-<script>(() => {
-    // anki-export-media: '_cloze-overlapper.js'
-    'use strict';
-
-    const CLOZE_CONTAINER = document.getElementById('rendered-cloze');
-
-    function reportError(e) {
-        CLOZE_CONTAINER.textContent = e;
-    }
-
-    async function renderClozes(typesetMathJax = false) {
-        try {
-            // https://github.com/ankidroid/Anki-Android/pull/7764
-            const mediaRoot = globalThis.AnkiDroidJS
-                            ? 'https://appassets.androidplatform.net'
-                            : globalThis.ankiPlatform === 'desktop' ? '' : '.';
-            const ClozeOverlapper = await import(`${mediaRoot}/_cloze-overlapper.js`);
-            await ClozeOverlapper.renderClozes(
-                undefined, typesetMathJax ? ClozeOverlapper.typesetMathJax : undefined);
-        } catch (e) {
-            reportError(e);
-        }
-    }
-
-    function getUpdateHook() {
-        if (typeof require !== 'undefined') {
-            try {
-                return require('anki/reviewer').onUpdateHook;
-            } catch (e) {
-                if (!e?.message.includes('Cannot require')) {
-                    throw e;
-                }
-            }
-        }
-        if (typeof onUpdateHook !== 'undefined') {
-            return onUpdateHook;
-        }
-    }
-
-    try {
-        const updateHook = getUpdateHook();
-        if (updateHook) {
-            updateHook.push(renderClozes);
-        } else if (typeof MathJax !== 'undefined') {
-            // AnkiDroid loads MathJax only if \( and/or \[ are present.
-            // AnkiWeb fails to assign MATH_JAX.startup.document before running this script.
-            if (MathJax.startup.promise) {
-                MathJax.startup.promise.then(() => renderClozes(true));
-            } else {
-                renderClozes(true);
-            }
-        } else {
-            renderClozes();
-        }
-    } catch (e) {
-        reportError(e);
-    }
-})();</script>
+<!-- anki-export-media: '_cloze-overlapper.js' -->
+<script src="_cloze-overlapper-loader.js"></script>
