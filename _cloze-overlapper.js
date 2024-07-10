@@ -64,32 +64,32 @@ CLOZE_GENERATOR_TEMPLATE.innerHTML = `
         }
 
         cloze-generator dialog {
+            inset-block-start: 50%;
+            inset-inline-start: 50%;
             margin: 0;
-            top: 50%;
-            left: 50%;
-            height: 100%;
-            width: 100%;
+            block-size: 100%;
+            inline-size: 100%;
             transform: translate(-50%, -50%);
         }
 
         cloze-generator form {
-            height: 100%;
+            block-size: 100%;
             display: grid;
+            grid:
+                "separatorLabel      separatorLabel"      min-content
+                "separator           separator"           min-content
+                "numPromptsLabel     numPromptsLabel"     min-content
+                "numPrompts          numPrompts"          min-content
+                "clozeInputLabel     clozeInputLabel"     min-content
+                "clozeInput          clozeInput"          4ex
+                "clozeInput          clozeInput"          1fr /* Absorbs remaining height. */
+                "generateButton      closeButton"         min-content
+                "generatedClozeLabel generatedClozeLabel" min-content
+                "generatedCloze      generatedCloze"      4ex
+                "generatedCloze      generatedCloze"      1fr; /* Absorbs remaining height. */
+            grid-template-columns: repeat(2, minmax(10px, 1fr));
             gap: 1ex 0.75em;
             align-items: baseline;
-            grid:
-                "separatorLabel      separatorLabel" min-content
-                "separator           separator" min-content
-                "numPromptsLabel     numPromptsLabel" min-content
-                "numPrompts          numPrompts" min-content
-                "clozeInputLabel     clozeInputLabel" min-content
-                "clozeInput          clozeInput" 4ex
-                "clozeInput          clozeInput" 1fr /* Absorbs remaining height. */
-                "generateButton      closeButton" min-content
-                "generatedClozeLabel generatedClozeLabel" min-content
-                "generatedCloze      generatedCloze" 4ex
-                "generatedCloze      generatedCloze" 1fr; /* Absorbs remaining height. */
-            grid-template-columns: repeat(2, minmax(10px, 1fr));
         }
 
         @media (min-width: 500px) {
@@ -107,12 +107,12 @@ CLOZE_GENERATOR_TEMPLATE.innerHTML = `
 
             cloze-generator form {
                 grid:
-                    "separatorLabel  numPromptsLabel" min-content
-                    "separator       numPrompts" min-content
+                    "separatorLabel  numPromptsLabel"     min-content
+                    "separator       numPrompts"          min-content
                     "clozeInputLabel generatedClozeLabel" min-content
-                    "clozeInput      generatedCloze" min-content
-                    "clozeInput      generatedCloze" /* Absorbs remaining height. */
-                    "generateButton  closeButton" min-content;
+                    "clozeInput      generatedCloze"      min-content
+                    "clozeInput      generatedCloze"      /* Absorbs remaining height. */
+                    "generateButton  closeButton"         min-content;
             }
         }
 
@@ -120,26 +120,26 @@ CLOZE_GENERATOR_TEMPLATE.innerHTML = `
             cloze-generator form {
                 grid:
                     "separatorLabel  clozeInputLabel generatedClozeLabel" min-content
-                    "separator       clozeInput      generatedCloze" min-content
-                    "numPromptsLabel clozeInput      generatedCloze" min-content
-                    "numPrompts      clozeInput      generatedCloze" min-content
-                    "generateButton  clozeInput      generatedCloze" min-content
-                    "closeButton     clozeInput      generatedCloze" min-content
+                    "separator       clozeInput      generatedCloze"      min-content
+                    "numPromptsLabel clozeInput      generatedCloze"      min-content
+                    "numPrompts      clozeInput      generatedCloze"      min-content
+                    "generateButton  clozeInput      generatedCloze"      min-content
+                    "closeButton     clozeInput      generatedCloze"      min-content
                     /* Absorbs remaining height. */
                     ".               clozeInput      generatedCloze";
                 grid-template-columns: repeat(3, minmax(10px, 1fr));
             }
         }
 
-        cloze-generator form label[for="separator"] { grid-area: separatorLabel; }
-        cloze-generator form input[name="separator"] { grid-area: separator; }
-        cloze-generator form label[for="numPrompts"] { grid-area: numPromptsLabel; }
-        cloze-generator form input[name="numPrompts"] { grid-area: numPrompts; }
-        cloze-generator form label[for="clozeInput"] { grid-area: clozeInputLabel; }
-        cloze-generator form textarea[name="clozeInput"] { grid-area: clozeInput; }
-        cloze-generator form label[for="generatedCloze"] { grid-area: generatedClozeLabel; }
+        cloze-generator form label[for="separator"]          { grid-area: separatorLabel; }
+        cloze-generator form input[name="separator"]         { grid-area: separator; }
+        cloze-generator form label[for="numPrompts"]         { grid-area: numPromptsLabel; }
+        cloze-generator form input[name="numPrompts"]        { grid-area: numPrompts; }
+        cloze-generator form label[for="clozeInput"]         { grid-area: clozeInputLabel; }
+        cloze-generator form textarea[name="clozeInput"]     { grid-area: clozeInput; }
+        cloze-generator form label[for="generatedCloze"]     { grid-area: generatedClozeLabel; }
         cloze-generator form textarea[name="generatedCloze"] { grid-area: generatedCloze; }
-        cloze-generator form button[name="closeButton"] { grid-area: closeButton; }
+        cloze-generator form button[name="closeButton"]      { grid-area: closeButton; }
 
         cloze-generator form button[name="generateButton"] {
             grid-area: generateButton;
@@ -162,7 +162,7 @@ CLOZE_GENERATOR_TEMPLATE.innerHTML = `
 
         cloze-generator form textarea {
             resize: none;
-            height: 100%;
+            block-size: 100%;
         }
 
         cloze-generator form button {
@@ -171,7 +171,7 @@ CLOZE_GENERATOR_TEMPLATE.innerHTML = `
 
         cloze-generator dialog + button {
             display: block;
-            margin-top: 0;
+            margin-block-start: 0;
             margin-inline: auto 0;
         }
     </style>
@@ -712,7 +712,7 @@ export function renderClozes(partialConf, onRender) {
     const renderedCloze = stripHtmlFromMathJax(
         parseCloze(clozeSource.innerHTML, config, cardInfo).render(config, cardInfo), cardInfo);
 
-    return new Promise(resolve => {
+    return /** @type {Promise<void>} */ (new Promise(resolve => {
         requestAnimationFrame(() => {
             if (revealAllButton && cardInfo.hasUnrevealedClozes) {
                 revealAllButton.addEventListener(
@@ -726,8 +726,10 @@ export function renderClozes(partialConf, onRender) {
             if (typeof MATH_JAX !== 'undefined') {
                 defineMathJaxClozeCommands(clozeContainer);
             }
-            // Called within the requestAnimationFrame(); not in promise's then().
-            resolve(onRender?.());
+            onRender?.();
+            // Clozes in MathJax can't be scrolled to.
+            clozeContainer.querySelector('.cloze')?.scrollIntoView({ block: 'center' });
+            resolve();
         });
-    });
+    }));
 }

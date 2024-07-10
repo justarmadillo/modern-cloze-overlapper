@@ -12,6 +12,7 @@ In addition to ``anki-simple-cloze-overlapper`` features, support was added for:
 - Nested clozes.
 - Clozes in MathJax.
 - Cloze Generator.
+- Scroll to cloze.
 
 The code was tested on all Anki platforms: Desktop, AnkiDroid, AnkiWeb and AnkiMobile.
 
