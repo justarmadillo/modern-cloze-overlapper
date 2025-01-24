@@ -48,17 +48,28 @@ How to Use
 Rendering Configuration
 -----------------------
 
-Template's field ``Before|After|OnlyContext|RevealAll|InactiveHints`` controls the rendering
-of clozes. Individual parameters are separated by either spaces, commas, pipes or dots.
-Omitted rightmost parameters all take default values.
+A self-explanatory field ``Before|After|OnlyContext|RevealAll|InactiveHints`` describes
+the format of the configuration. In addition to pipes, parameters can be separated by spaces,
+commas, or dots. Omitted rightmost parameters and non-parsable parameters all fall back
+to lower priority configuration sources.
+
+Configuration sources by priority:
+#. ``Before|After|OnlyContext|RevealAll|InactiveHints`` field controls the rendering
+   of a particular note.
+#. ``<template id="default-cloze-config">`` on the front and the back of the template
+   provides the defaults for a note type.
+#. If a value is not present in either note's or note types' configuration,
+   or if it cannot be parsed, the script falls back to hardcoded defaults.
 
 The parameters are as follows:
 
-``Before`` (non-negative integer, defaults to 1)
+``Before`` (an integer, defaults to 1)
   The number of clozes before the currently active ones to uncover.
+  A negative value will uncover everything before the currently active clozes.
 
-``After`` (non-negative integer, defaults to 0)
+``After`` (an integer, defaults to 0)
   The number of clozes after the currently active ones to uncover.
+  A negative value will uncover everything after the currently active clozes.
 
 ``OnlyContext`` (Boolean ``true`` or ``false``, defaults to ``false``)
   Show clozes only within the context (before + current + after).

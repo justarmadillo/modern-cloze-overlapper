@@ -2,6 +2,7 @@
 
 <template id="anki-cloze">{{cloze:Text}}</template>
 <template id="cloze-config">{{Before|After|OnlyContext|RevealAll|InactiveHints}}</template>
+<template id="default-cloze-config">1|0|false|false|false</template>
 <template id="cloze-source">
   <!--
     Uncomment and adjust if MathJax style autodetection doesn't work for you.

@@ -520,13 +520,21 @@ export function parseCloze(clozeSrc, config, cardInfo) {
     }
     // Anki ignores unclosed nestedClozes, so do we.
 
+    /**
+     * @param {number} n
+     * @returns {number}
+     */
+    function infIfNeg(n) {
+        return n < 0 ? Number.POSITIVE_INFINITY : n;
+    }
+
     for (const c of currentCardClozes) {
         cardInfo.askAll ||= c.askAll;
-        for (let b = c.clozeBefore, i = config.contextBefore; b && i > 0; --i) {
+        for (let b = c.clozeBefore, i = infIfNeg(config.contextBefore); b && i > 0; --i) {
             b.isContext = true;
             b = b.clozeBefore;
         }
-        for (let a = c.clozeAfter, i = config.contextAfter; a && i > 0; --i) {
+        for (let a = c.clozeAfter, i = infIfNeg(config.contextAfter); a && i > 0; --i) {
             a.isContext = true;
             a = a.clozeAfter;
         }
@@ -652,23 +660,39 @@ export function typesetMathJax() {
 }
 
 const CONFIG_SPLIT_RE = /[,\s|.]+/;
+const BOOL_RE = /^(?:true|false)$/;
 
 /**
- * @param {string} [elementId='cloze-config']
- * @returns {RenderConfig}
+ * @param {string} elementId
+ * @returns {Partial<RenderConfig>}
  */
-function parseConfig(elementId = 'cloze-config') {
+function parseConfig(elementId) {
     const config = /** @type {string} */ (
         /** @type {HTMLTemplateElement} */ (document.getElementById(elementId)).content.textContent
     ).split(CONFIG_SPLIT_RE);
 
-    return {
-        contextBefore: config[0] === '0' ? 0 : Math.max(+(config[0] || 1), 1),
-        contextAfter: Math.max(+(config[1] || 0), 0),
-        showOnlyContext: (config[2] || 'false').toLowerCase() === 'true',
-        revealAllClozes: (config[3] || 'false').toLowerCase() === 'true',
-        showInactiveHints: (config[4] || 'false').toLowerCase() === 'true'
-    };
+    const parsedConf = {};
+
+    const contextBefore = +(config[0] || 'NaN');
+    if (Number.isSafeInteger(contextBefore)) {
+        parsedConf.contextBefore = contextBefore;
+    }
+    const contextAfter = +(config[1] || 'NaN');
+    if (Number.isSafeInteger(contextAfter)) {
+        parsedConf.contextAfter = contextAfter;
+    }
+
+    if (BOOL_RE.test(config[2] || '')) {
+        parsedConf.showOnlyContext = config[2] === 'true';
+    }
+    if (BOOL_RE.test(config[3] || '')) {
+        parsedConf.revealAllClozes = config[3] === 'true';
+    }
+    if (BOOL_RE.test(config[4] || '')) {
+        parsedConf.showInactiveHints = config[4] === 'true';
+    }
+
+    return parsedConf;
 }
 
 /** @this {HTMLButtonElement} */
@@ -686,7 +710,17 @@ const CARD_NUM_RE = /(?<=\bcard)\d+\b/;
  * @param {() => Promise<void>} [onRender]
  */
 export function renderClozes(partialConf, onRender) {
-    const config = { ...parseConfig(), ...partialConf };
+    const config = {
+        contextBefore: 1,
+        contextAfter: 0,
+        showOnlyContext: false,
+        revealAllClozes: false,
+        showInactiveHints: false,
+
+        ...parseConfig('default-cloze-config'),
+        ...parseConfig('cloze-config'),
+        ...partialConf
+    };
     const revealAllButton = document.getElementById('reveal-all-button');
     // card# class is guaranteed to be present only if the script is invoked from onUpdateHook.
     // ".cloze[data-ordinal]" is absent in MathJax clozes.
