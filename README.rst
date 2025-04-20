@@ -13,6 +13,7 @@ In addition to ``anki-simple-cloze-overlapper`` features, support was added for:
 - Clozes in MathJax.
 - Cloze Generator.
 - Scroll to cloze.
+- Ability to render user-provided cloze hints without brackets.
 
 The code was tested on all Anki platforms: Desktop, AnkiDroid, AnkiWeb and AnkiMobile.
 
@@ -29,7 +30,8 @@ How to Use
    __ https://docs.ankiweb.net/media.html#manually-adding-media
 
 #. Create a new note type by cloning the built-in Cloze.
-#. Add a rendering configuration field named ``Before|After|OnlyContext|RevealAll|InactiveHints``.
+#. Add a rendering configuration field named
+   ``Before|After|OnlyContext|RevealAll|InactiveHints|NoHintBrackets``.
 #. Put the content of `<front.template.anki>`_ into note's Front Template.
 #. Put the content of `<back.template.anki>`_ into note's Back Template.
 #. (Optional AnkiDroid compatibility) Add
@@ -48,14 +50,15 @@ How to Use
 Rendering Configuration
 -----------------------
 
-A self-explanatory field ``Before|After|OnlyContext|RevealAll|InactiveHints`` describes
-the format of the configuration. In addition to pipes, parameters can be separated by spaces,
-commas, or dots. Omitted rightmost parameters and non-parsable parameters all fall back
+A self-explanatory field ``Before|After|OnlyContext|RevealAll|InactiveHints|NoHintBrackets``
+describes the format of the configuration. In addition to pipes, parameters can be separated
+by spaces, commas, or dots. Omitted rightmost parameters and non-parsable parameters all fall back
 to lower priority configuration sources.
 
 Configuration sources by priority:
-#. ``Before|After|OnlyContext|RevealAll|InactiveHints`` field controls the rendering
-   of a particular note.
+
+#. ``Before|After|OnlyContext|RevealAll|InactiveHints|NoHintBrackets`` field controls
+   the rendering of a particular note.
 #. ``<template id="default-cloze-config">`` on the front and the back of the template
    provides the defaults for a note type.
 #. If a value is not present in either note's or note types' configuration,
@@ -83,6 +86,10 @@ The parameters are as follows:
   Use user-provided hints (i.e. ``{{c#::...::user provided hint}}``) for all clozes.
   By default, only the currently active clozes use provided hints, others use ``[...]``.
 
+``NoHintBrackets`` (Boolean ``true`` or ``false``, defaults to ``false``)
+  Render user-provided hints without brackets. Note that the default hint ``[...]``
+  always renders with brackets.
+
 Context takes nesting of clozes into account: only clozes at the same level of nesting or above
 can be considered before of after the current one. In the following example::
 
@@ -102,9 +109,10 @@ with ``ask-all`` in its content, e.g. ``{{c99::ask-all}}``.
 Styling of Clozes inside MathJax
 --------------------------------
 
-CSS ``.cloze`` class doesn't apply inside MathJax. The styling of MathJax clozes is relegated
-to TeX macros: ``\AnkiClozeQ`` on the front of the card, and ``\AnkiClozeA`` on the back
-of the card.
+CSS ``.cloze`` class doesn't apply inside MathJax. MathJax does support a non-standard
+``\class{cloze}{...}`` TeX command; unfortunately it renders very poorly. The styling of MathJax
+clozes is thus relegated to TeX macros: ``\AnkiClozeQ`` on the front of the card,
+and ``\AnkiClozeA`` on the back of the card.
 
 By default, ``\AnkiClozeA`` is identical to ``\AnkiClozeQ``. The style of ``\AnkiClozeQ`` is taken
 from the ``.cloze`` class:

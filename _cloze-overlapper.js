@@ -288,12 +288,13 @@ function any(iterable, predicate) {
     return false;
 }
 
-const DEFAULT_HINT = '...';
+const DEFAULT_HINT = '[...]';
 
 /**
  * @typedef {ClozeNode | TextNode} ClozeOrTextNode
- * @typedef {{ contextBefore: number, contextAfter: number, showOnlyContext: boolean,
- *             revealAllClozes: boolean, showInactiveHints: boolean }} RenderConfig
+ * @typedef {{ contextBefore: number, contextAfter: number,
+ *             showOnlyContext: boolean, revealAllClozes: boolean,
+ *             showInactiveHints: boolean, noHintBrackets: boolean }} RenderConfig
  * @typedef {{ cardNum: number, isBack: boolean,
  *             askAll: boolean, hasUnrevealedClozes: boolean }} CardInfo
  */
@@ -365,8 +366,8 @@ class ClozeNode extends NodeArray {
         /** @type {ClozeNode | null} */
         this.clozeAfter = null;
 
-        /** @type {string} */
-        this.hint = DEFAULT_HINT;
+        /** @type {string | null}} */
+        this.hint = null;
 
         /** @type {boolean} */
         this.isContext = false;
@@ -416,20 +417,24 @@ class ClozeNode extends NodeArray {
      * @returns {string}
      */
     render(config, cardInfo) {
-        /** @type {(className: string, html?: string) => string} */
-        const renderClozeSpan = (className, html) => this.#makeClozeSpan(
-            className, html ?? super.render(config, cardInfo)
-        ).outerHTML;
-
         // Ask all clozes are never shown.
         if (this.askAll) {
             return '';
         }
+
+        /** @type {(className: string, html?: string) => string} */
+        const renderClozeSpan = (className, html) => this.#makeClozeSpan(
+            className, html ?? super.render(config, cardInfo)
+        ).outerHTML;
+        const renderedHint = this.hint != null
+            ? config.noHintBrackets ? this.hint : `[${this.hint}]`
+            : DEFAULT_HINT;
+
         if (this.cardNum === cardInfo.cardNum || cardInfo.askAll) {
             if (cardInfo.isBack) {
                 return renderClozeSpan('cloze');
             }
-            const span = this.#makeClozeSpan('cloze', `[${this.hint}]`);
+            const span = this.#makeClozeSpan('cloze', renderedHint);
             span.dataset['cloze'] = super.render(config, cardInfo);
             return span.outerHTML;
         }
@@ -444,8 +449,8 @@ class ClozeNode extends NodeArray {
                 return renderClozeSpan('cloze-inactive');
             }
             cardInfo.hasUnrevealedClozes = true;
-            return renderClozeSpan('cloze-inactive',
-                                   `[${config.showInactiveHints ? this.hint : DEFAULT_HINT}]`);
+            return renderClozeSpan(
+                'cloze-inactive', config.showInactiveHints ? renderedHint : DEFAULT_HINT);
         }
         return '';
     }
@@ -669,7 +674,7 @@ const BOOL_RE = /^(?:true|false)$/;
 function parseConfig(elementId) {
     const config = /** @type {string} */ (
         /** @type {HTMLTemplateElement} */ (document.getElementById(elementId)).content.textContent
-    ).split(CONFIG_SPLIT_RE);
+    ).trim().split(CONFIG_SPLIT_RE);
 
     const parsedConf = {};
 
@@ -691,31 +696,28 @@ function parseConfig(elementId) {
     if (BOOL_RE.test(config[4] || '')) {
         parsedConf.showInactiveHints = config[4] === 'true';
     }
+    if (BOOL_RE.test(config[5] || '')) {
+        parsedConf.noHintBrackets = config[5] === 'true';
+    }
 
     return parsedConf;
-}
-
-/** @this {HTMLButtonElement} */
-function revealAllCallback() {
-    renderClozes({ revealAllClozes: true }, () => {
-        this.hidden = true;
-        return typesetMathJax();
-    });
 }
 
 const CARD_NUM_RE = /(?<=\bcard)\d+\b/;
 
 /**
  * @param {Partial<RenderConfig>} partialConf
- * @param {() => Promise<void>} [onRender]
+ * @param {() => Promise<void>} [onRenderOnce]
+ * @param {() => Promise<void>} [onRenderAlways]
  */
-export function renderClozes(partialConf, onRender) {
+export function renderClozes(partialConf, onRenderOnce, onRenderAlways) {
     const config = {
         contextBefore: 1,
         contextAfter: 0,
         showOnlyContext: false,
         revealAllClozes: false,
         showInactiveHints: false,
+        noHintBrackets: false,
 
         ...parseConfig('default-cloze-config'),
         ...parseConfig('cloze-config'),
@@ -749,6 +751,17 @@ export function renderClozes(partialConf, onRender) {
     return /** @type {Promise<void>} */ (new Promise(resolve => {
         requestAnimationFrame(() => {
             if (revealAllButton && cardInfo.hasUnrevealedClozes) {
+                /** @this {HTMLButtonElement} */
+                function revealAllCallback() {
+                    renderClozes(
+                        { revealAllClozes: true },
+                        () => {
+                            this.hidden = true;
+                            return typesetMathJax();
+                        },
+                        onRenderAlways
+                    );
+                }
                 revealAllButton.addEventListener(
                     'click', revealAllCallback, { once: true, passive: true });
                 revealAllButton.hidden = false;
@@ -760,7 +773,8 @@ export function renderClozes(partialConf, onRender) {
             if (typeof MATH_JAX !== 'undefined') {
                 defineMathJaxClozeCommands(clozeContainer);
             }
-            onRender?.();
+            onRenderOnce?.();
+            onRenderAlways?.();
             // Clozes in MathJax can't be scrolled to.
             clozeContainer.querySelector('.cloze')?.scrollIntoView({ block: 'center' });
             resolve();
