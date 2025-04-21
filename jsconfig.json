@@ -13,14 +13,13 @@
         "strict": true,
 
         "module": "ESNext",
-        "moduleResolution": "Classic",
+        "moduleResolution": "bundler",
+        "noUncheckedSideEffectImports": true,
 
-        "newLine": "LF",
         "noEmit": true,
 
         "checkJs": true,
 
-        "esModuleInterop": true,
         "verbatimModuleSyntax": true,
 
         "target": "ESNext"

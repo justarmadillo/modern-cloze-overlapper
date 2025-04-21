@@ -749,7 +749,7 @@ export function renderClozes(partialConf, onRenderOnce, onRenderAlways) {
         parseCloze(clozeSource.innerHTML, config, cardInfo).render(config, cardInfo), cardInfo);
 
     return /** @type {Promise<void>} */ (new Promise(resolve => {
-        requestAnimationFrame(() => {
+        requestAnimationFrame(async () => {
             if (revealAllButton && cardInfo.hasUnrevealedClozes) {
                 /** @this {HTMLButtonElement} */
                 function revealAllCallback() {
@@ -773,8 +773,8 @@ export function renderClozes(partialConf, onRenderOnce, onRenderAlways) {
             if (typeof MATH_JAX !== 'undefined') {
                 defineMathJaxClozeCommands(clozeContainer);
             }
-            onRenderOnce?.();
-            onRenderAlways?.();
+            await onRenderOnce?.();
+            await onRenderAlways?.();
             // Clozes in MathJax can't be scrolled to.
             clozeContainer.querySelector('.cloze')?.scrollIntoView({ block: 'center' });
             resolve();
