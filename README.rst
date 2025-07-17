@@ -12,7 +12,7 @@ In addition to ``anki-simple-cloze-overlapper`` features, support was added for:
 - Nested clozes.
 - Clozes in MathJax.
 - Cloze Generator.
-- Scroll to cloze.
+- Scroll to cloze (MathJax clozes not supported).
 - Ability to render user-provided cloze hints without brackets.
 
 The code was tested on all Anki platforms: Desktop, AnkiDroid, AnkiWeb and AnkiMobile.
@@ -138,6 +138,84 @@ and ``back.template.anki``, and redefine ``\AnkiClozeA`` and ``\AnkiClozeA`` as 
       \renewcommand\AnkiClozeA[1]{\AnkiClozeQ{#1}}
     \]
   -->
+
+Using the Cloze Generator
+-------------------------
+
+Anki has built-in support for nested clozes, but writing such clozes by hand is cumbersome.
+Cloze Generator simplifies this process.
+
+In order to use the Cloze Generator, you need to have at least one ‘Cloze Overlapper’ note.
+After adding such a note, go to Browser, select a ‘Cloze Overlapper’ note, and click Preview:
+
+.. image:: docs/browser.webp
+   :width: 50%
+
+Press ‘Generate Cloze’ button in the top right corner of the Preview. Return back to Anki's
+main window and click ‘Add’. Place ‘Add’ and ‘Preview’ windows side-by-side as in
+the following picture:
+
+.. image:: docs/cloze-generator.webp
+
+Now you can paste the text you want to add clozes to into the ‘Enter text’ field. The generator
+will split the given text into chunks by the ‘Separator’ regex, and then wrap every single chunk
+with cloze prompts, which is easier than wrapping these chunks by hand. The generated cloze
+should be copied from ‘Copy to Anki’ field of the generator to the ‘Text’ field of a new
+‘Cloze Overlapper’ note.
+
+Generator's ‘Number of prompts’ field creates nested clozes, which can help when e.g. memorising
+poetry. For example, if you were to set the ‘Number of prompts’ to 5 and paste the following
+into the generator's ‘Enter text’:
+
+.. code:: txt
+
+  To be, or not to be, that is the question:
+  Whether 'tis nobler in the mind to suffer
+  The slings and arrows of outrageous fortune,
+  ...
+
+the generator will produce the following output:
+
+.. code:: txt
+
+  {{c1::To be, or not to be, that is the question:}}
+  {{c1::{{c2::Whether 'tis nobler in the mind to suffer}}}}
+  {{c1::{{c2::{{c3::The slings and arrows of outrageous fortune,}}}}}}
+  ...
+
+Copy this to the text editor and replace ``^`` regex with ``<div>``, and ``$`` regex
+with ``</div>`` to get:
+
+.. code:: txt
+
+  <div>{{c1::To be, or not to be, that is the question:}}</div>
+  <div>{{c1::{{c2::Whether 'tis nobler in the mind to suffer}}}}</div>
+  <div>{{c1::{{c2::{{c3::The slings and arrows of outrageous fortune,}}}}}}</div>
+  ...
+
+Paste that into ‘Cloze Overlapper’'s ‘Text’ field's HTML source, and set
+``Before|After|OnlyContext|RevealAll|InactiveHints|NoHintBrackets`` to ``1 1 true``:
+
+.. image:: docs/poetry-src.webp
+   :width: 50%
+
+Now you have a number of cloze cards, which ask you to recall 5 consecutive lines of text
+given one line of context before and one line of context after. The first three such cards
+are below:
+
+|poetry-1| |poetry-2| |poetry-3|
+
+.. |poetry-1| image:: docs/poetry-1.webp
+   :width: 32%
+
+.. |poetry-2| image:: docs/poetry-2.webp
+   :width: 32%
+
+.. |poetry-3| image:: docs/poetry-3.webp
+   :width: 32%
+
+Similarly, by making appropriate regex replacements of the generator output in a text editor,
+you can generate ordered ``<ol>`` or unordered ``<ul>`` lists, etc.
 
 Reloading ``_cloze-overlapper.js``
 -----------------------------------
